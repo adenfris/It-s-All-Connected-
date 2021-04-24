@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
+using System.Net;
 using System.ServiceModel.Syndication;
 using System.Xml;
 
@@ -17,14 +18,19 @@ public class Article : MonoBehaviour
 
     // Start is called before the first frame update
     void Start()
-    {
+    {        
         CheckInspectorSettings();
 
         string rssURL = "https://en.wikinews.org/w/index.php?title=Special:NewsFeed&feed=atom&categories=Published&notcategories=No%20publish%7CArchived%7CAutoArchived%7Cdisputed&namespace=0&count=30&hourcount=124&ordermethod=categoryadd&stablepages=only";
 
         SyndicationFeed rssFeed = DownloadRSSFeed(rssURL);
 
-        articleBody.text = rssFeed.Items.ToString();
+        foreach (SyndicationItem article in rssFeed.Items)
+        {
+            articleHeadline.text = article.Title.Text;
+            articleBody.text = WebUtility.HtmlDecode(article.Summary.Text);
+            break;
+        }
     }
 
     // Update is called once per frame
@@ -48,8 +54,7 @@ public class Article : MonoBehaviour
 
     private SyndicationFeed DownloadRSSFeed(string rssURL)
     {
-        string url = "http://fooblog.com/feed";
-        XmlReader xmlReader = XmlReader.Create(url);
+        XmlReader xmlReader = XmlReader.Create(rssURL);
         SyndicationFeed rssFeed = SyndicationFeed.Load(xmlReader);
         xmlReader.Close();
 
