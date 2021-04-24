@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 
-using System.Net;
 using System.ServiceModel.Syndication;
 using System.Xml;
+
+using HtmlAgilityPack;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,7 +29,18 @@ public class Article : MonoBehaviour
         foreach (SyndicationItem article in rssFeed.Items)
         {
             articleHeadline.text = article.Title.Text;
-            articleBody.text = WebUtility.HtmlDecode(article.Summary.Text);
+
+            HtmlDocument articleBodyHtml = new HtmlDocument();
+            articleBodyHtml.LoadHtml(article.Summary.Text);
+            HtmlNodeCollection htmlBody = articleBodyHtml.DocumentNode.SelectNodes("//*[@class=\"mw-parser-output\"]/p");
+            htmlBody.RemoveAt(0); // Get rid of date code
+
+            articleBody.text = "";
+            foreach (HtmlNode paragraph in htmlBody)
+            {
+                articleBody.text += paragraph.InnerText;
+            }
+
             break;
         }
     }
