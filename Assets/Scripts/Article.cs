@@ -1,5 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+
+using System.ServiceModel.Syndication;
+using System.Xml;
+
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -7,24 +11,48 @@ using TMPro;
 public class Article : MonoBehaviour
 {
     [SerializeField]
+    private TMP_Text articleHeadline;
+    [SerializeField]
     private TMP_Text articleBody;
 
     // Start is called before the first frame update
     void Start()
     {
-        if (articleBody != null)
-        {
-            articleBody.text = "Is this working?";
-        }
-        else
-        {
-            Debug.LogError("Article body not assigned in inspector!");
-        }
+        CheckInspectorSettings();
+
+        string rssURL = "https://en.wikinews.org/w/index.php?title=Special:NewsFeed&feed=atom&categories=Published&notcategories=No%20publish%7CArchived%7CAutoArchived%7Cdisputed&namespace=0&count=30&hourcount=124&ordermethod=categoryadd&stablepages=only";
+
+        SyndicationFeed rssFeed = DownloadRSSFeed(rssURL);
+
+        articleBody.text = rssFeed.Items.ToString();
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    private void CheckInspectorSettings()
+    {
+        if (articleHeadline == null)
+        {
+            Debug.LogError("Article headline not assigned in inspector!");
+        }
+
+        if (articleBody == null)
+        {
+            Debug.LogError("Article body not assigned in inspector!");
+        }
+    }
+
+    private SyndicationFeed DownloadRSSFeed(string rssURL)
+    {
+        string url = "http://fooblog.com/feed";
+        XmlReader xmlReader = XmlReader.Create(url);
+        SyndicationFeed rssFeed = SyndicationFeed.Load(xmlReader);
+        xmlReader.Close();
+
+        return rssFeed;
     }
 }
