@@ -16,6 +16,9 @@ using TMPro;
 public class Article : MonoBehaviour
 {
     [SerializeField]
+    private int articleIndex;
+
+    [SerializeField]
     private TMP_Text articleHeadline;
     [SerializeField]
     private TMP_Text articleBody;
@@ -61,28 +64,25 @@ public class Article : MonoBehaviour
     private void ExtractRSSToArticle(string rssURL)
     {
         SyndicationFeed rssFeed = DownloadRSSFeed(rssURL);
+        
+        SyndicationItem article = rssFeed.Items.ElementAt<SyndicationItem>(articleIndex);
 
-        foreach (SyndicationItem article in rssFeed.Items)
-        {
-            articleHeadline.text = article.Title.Text;
+        articleHeadline.text = article.Title.Text;
 
-            string rawBody = GetRawArticleBody(article);
+        string rawBody = GetRawArticleBody(article);
 
-            Regex removeNonLettersRegex = new Regex("[^a-zA-Z \\-]");
-            string parsedBody = removeNonLettersRegex.Replace(rawBody, "");
-            parsedBody = parsedBody.ToLower();
-            string[] words = parsedBody.Split(null);
-            Array.Sort(words);
-            
-            var result = words.GroupBy(word => word)
-                .OrderByDescending(wordGroup => wordGroup.Count())
-                .ThenBy(wordGroup => wordGroup.Key)
-                .SelectMany(wordGroup => wordGroup);
+        Regex removeNonLettersRegex = new Regex("[^a-zA-Z \\-]");
+        string parsedBody = removeNonLettersRegex.Replace(rawBody, "");
+        parsedBody = parsedBody.ToLower();
+        string[] words = parsedBody.Split(null);
+        Array.Sort(words);
+        
+        var result = words.GroupBy(word => word)
+            .OrderByDescending(wordGroup => wordGroup.Count())
+            .ThenBy(wordGroup => wordGroup.Key)
+            .SelectMany(wordGroup => wordGroup);
 
-            articleBody.text = string.Join(",", result);
-
-            break;
-        }
+        articleBody.text = string.Join(",", result);
     }
 
     private string GetRawArticleBody(SyndicationItem article)
