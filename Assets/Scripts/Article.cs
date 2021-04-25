@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 
 using System.Linq;
 using System.ServiceModel.Syndication;
@@ -16,31 +17,31 @@ using TMPro;
 public class Article : MonoBehaviour
 {
     [SerializeField]
-    private int articleIndex;
-
-    [SerializeField]
     private TMP_Text articleHeadline;
     [SerializeField]
     private TMP_Text articleBody;
 
     private List<string> wordBlacklist;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        wordBlacklist = Settings.GetWordBlacklist();
+    private OrderedDictionary wordCounts;
 
+    // Start is called before the first frame update
+    public void InitializeArticle(string articleHeadline, string articleBody, List<string> wordBlacklist)
+    {
+        this.articleHeadline.text = articleHeadline;
+        this.articleBody.text = articleBody;
+        this.wordBlacklist = wordBlacklist;
+        
         CheckInspectorSettings();
 
-        string rssURL = "https://en.wikinews.org/w/index.php?title=Special:NewsFeed&feed=atom&categories=Published&notcategories=No%20publish%7CArchived%7CAutoArchived%7Cdisputed&namespace=0&count=30&hourcount=124&ordermethod=categoryadd&stablepages=only";
+        wordCounts = DoWordCount();
 
-        ExtractRSSToArticle(rssURL);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        string wordCountString = "";
+        foreach (KeyValuePair<string, int> word in wordCounts)
+        {
+            wordCountString += string.Format("\"{0}\", {1} occurances\n", word.Key, word.Value);
+        }
+        this.articleBody.text = wordCountString;
     }
 
     private void CheckInspectorSettings()
@@ -55,52 +56,11 @@ public class Article : MonoBehaviour
             Debug.LogError("Article body not assigned in inspector!");
         }
     }
-
-    private SyndicationFeed DownloadRSSFeed(string rssURL)
-    {
-        XmlReader xmlReader = XmlReader.Create(rssURL);
-        SyndicationFeed rssFeed = SyndicationFeed.Load(xmlReader);
-        xmlReader.Close();
-
-        return rssFeed;
-    }
-
-    private void ExtractRSSToArticle(string rssURL)
-    {
-        SyndicationFeed rssFeed = DownloadRSSFeed(rssURL);
-
-        SyndicationItem article = rssFeed.Items.ElementAt<SyndicationItem>(articleIndex);
-
-        articleHeadline.text = article.Title.Text;
-
-        string rawBody = HtmlToRawText(article);
-
-        string processedBody = DoWordCount(rawBody);
-
-        articleBody.text = processedBody;
-    }
-
-    private string HtmlToRawText(SyndicationItem article)
-    {
-        string articleText = "";
-
-        HtmlDocument articleBodyHtml = new HtmlDocument();
-        articleBodyHtml.LoadHtml(article.Summary.Text);
-        HtmlNodeCollection htmlBody = articleBodyHtml.DocumentNode.SelectNodes("//*[@class=\"mw-parser-output\"]/p");
-        htmlBody.RemoveAt(0); // Get rid of date code
-
-        foreach (HtmlNode paragraph in htmlBody)
-        {
-            articleText += paragraph.InnerText;
-        }
-
-        return articleText;
-    }
-
-    private string DoWordCount(string rawArticleText)
+    
+    private OrderedDictionary DoWordCount()
     {
         Regex removeNonLettersRegex = new Regex("[^a-zA-Z \\-]+");
-        string parsedBody = removeNonLettersRegex.Replace(rawArticleText, "");
+        string parsedBody = removeNonLettersRegex.Replace(articleBody.text, "");
 
         parsedBody = parsedBody.ToLower();
 
@@ -113,13 +73,13 @@ public class Article : MonoBehaviour
             .OrderByDescending(wordGroup => wordGroup.Count())
             .Where(longWord => WordAllowed(longWord.Key, wordBlacklist));
 
-        string wordCountResult = "";
+        OrderedDictionary wordCountDictionary = new OrderedDictionary();
         foreach (var group in groupedWords)
         {
-            wordCountResult += string.Format("\"{0}\", {1} occurances\n", group.Key, group.Count());
+            wordCountDictionary.Add(group.Key, group.Count());
         }
 
-        return wordCountResult;
+        return wordCountDictionary;
     }
 
     private static bool WordAllowed(String word, List<string> wordBlacklist)
