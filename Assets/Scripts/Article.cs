@@ -23,9 +23,13 @@ public class Article : MonoBehaviour
     [SerializeField]
     private TMP_Text articleBody;
 
+    private List<string> wordBlacklist;
+
     // Start is called before the first frame update
     void Start()
-    {        
+    {
+        wordBlacklist = Settings.GetWordBlacklist();
+
         CheckInspectorSettings();
 
         string rssURL = "https://en.wikinews.org/w/index.php?title=Special:NewsFeed&feed=atom&categories=Published&notcategories=No%20publish%7CArchived%7CAutoArchived%7Cdisputed&namespace=0&count=30&hourcount=124&ordermethod=categoryadd&stablepages=only";
@@ -36,7 +40,7 @@ public class Article : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     private void CheckInspectorSettings()
@@ -64,28 +68,19 @@ public class Article : MonoBehaviour
     private void ExtractRSSToArticle(string rssURL)
     {
         SyndicationFeed rssFeed = DownloadRSSFeed(rssURL);
-        
+
         SyndicationItem article = rssFeed.Items.ElementAt<SyndicationItem>(articleIndex);
 
         articleHeadline.text = article.Title.Text;
 
-        string rawBody = GetRawArticleBody(article);
+        string rawBody = HtmlToRawText(article);
 
-        Regex removeNonLettersRegex = new Regex("[^a-zA-Z \\-]");
-        string parsedBody = removeNonLettersRegex.Replace(rawBody, "");
-        parsedBody = parsedBody.ToLower();
-        string[] words = parsedBody.Split(null);
-        Array.Sort(words);
-        
-        var result = words.GroupBy(word => word)
-            .OrderByDescending(wordGroup => wordGroup.Count())
-            .ThenBy(wordGroup => wordGroup.Key)
-            .SelectMany(wordGroup => wordGroup);
+        string processedBody = DoWordCount(rawBody);
 
-        articleBody.text = string.Join(",", result);
+        articleBody.text = processedBody;
     }
 
-    private string GetRawArticleBody(SyndicationItem article)
+    private string HtmlToRawText(SyndicationItem article)
     {
         string articleText = "";
 
@@ -100,5 +95,39 @@ public class Article : MonoBehaviour
         }
 
         return articleText;
+    }
+
+    private string DoWordCount(string rawArticleText)
+    {
+        Regex removeNonLettersRegex = new Regex("[^a-zA-Z \\-]+");
+        string parsedBody = removeNonLettersRegex.Replace(rawArticleText, "");
+
+        parsedBody = parsedBody.ToLower();
+
+        Regex fixTooLongSpacesRegex = new Regex("[\\s]+");
+        parsedBody = fixTooLongSpacesRegex.Replace(parsedBody, " ");
+
+        string[] words = parsedBody.Split(' ');
+
+        var groupedWords = words.GroupBy(word => word)
+            .OrderByDescending(wordGroup => wordGroup.Count())
+            .Where(longWord => WordAllowed(longWord.Key, wordBlacklist));
+
+        string wordCountResult = "";
+        foreach (var group in groupedWords)
+        {
+            wordCountResult += string.Format("\"{0}\", {1} occurances\n", group.Key, group.Count());
+        }
+
+        return wordCountResult;
+    }
+
+    private static bool WordAllowed(String word, List<string> wordBlacklist)
+    {
+        bool notTooShort = word.Length >= Settings.Instance.shortestWordAllowed;
+
+        bool blacklisted = wordBlacklist.Contains<string>(word);
+
+        return (notTooShort && !blacklisted);
     }
 }
