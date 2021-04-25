@@ -38,6 +38,12 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: ArticleBackground
+    uniqueID: 1029031905
+    locked: 0
+  - name: String
+    uniqueID: 4267003073
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0

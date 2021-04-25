@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(Camera))]
 public class PlayerControls : MonoBehaviour
@@ -9,6 +11,8 @@ public class PlayerControls : MonoBehaviour
 
     private Vector3 cameraDragOrigin;
     private Vector3 globalDragOrigin;
+
+    private bool areDraggingView = false;
 
     private void Start()
     {
@@ -23,12 +27,19 @@ public class PlayerControls : MonoBehaviour
 
     private void DragToMove()
     {
-        if (Input.GetButtonDown(ControlNames.mainClick)) // If we just pressed the button
+        if (Input.GetButtonDown(InputNames.dragView)) // If we just pressed the button
         {
-            cameraDragOrigin = Input.mousePosition;
-            globalDragOrigin = playerCamera.ScreenToWorldPoint(Input.mousePosition);
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            RaycastHit2D[] mouseHit = Physics2D.RaycastAll(mousePos, Vector2.up, 0.0000001f);
+            
+            if (mouseHit.Length == 0 && !EventSystem.current.IsPointerOverGameObject()) // If there are no objects under the mouse
+            {
+                areDraggingView = true;
+                cameraDragOrigin = Input.mousePosition;
+                globalDragOrigin = playerCamera.ScreenToWorldPoint(Input.mousePosition);
+            }
         }
-        else if (Input.GetButton(ControlNames.mainClick))  // If we didn't *just* press the button, but we're still pressing it
+        else if (Input.GetButton(InputNames.dragView) && areDraggingView)  // If we didn't *just* press the button, but we're still pressing it
         {
             Vector3 cameraDragNew = Input.mousePosition;
             Vector3 globalDragNew = playerCamera.ScreenToWorldPoint(cameraDragNew);
@@ -36,11 +47,15 @@ public class PlayerControls : MonoBehaviour
 
             transform.Translate(moveVector, Space.Self);
         }
+        else
+        {
+            areDraggingView = false;
+        }
     }
 
     private void Zoom()
     {
-        float scrollWheel = Input.GetAxis(ControlNames.scrollWheel);
+        float scrollWheel = Input.GetAxis(InputNames.zoomAxis);
         float zoomMult = Mathf.Abs(scrollWheel) * Settings.Instance.zoomSpeed * Time.deltaTime;
         zoomMult += 1;
 
