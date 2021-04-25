@@ -1,8 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
+using System.Linq;
 using System.ServiceModel.Syndication;
 using System.Xml;
+using System.Text.RegularExpressions;
 
 using HtmlAgilityPack;
 
@@ -24,25 +27,7 @@ public class Article : MonoBehaviour
 
         string rssURL = "https://en.wikinews.org/w/index.php?title=Special:NewsFeed&feed=atom&categories=Published&notcategories=No%20publish%7CArchived%7CAutoArchived%7Cdisputed&namespace=0&count=30&hourcount=124&ordermethod=categoryadd&stablepages=only";
 
-        SyndicationFeed rssFeed = DownloadRSSFeed(rssURL);
-
-        foreach (SyndicationItem article in rssFeed.Items)
-        {
-            articleHeadline.text = article.Title.Text;
-
-            HtmlDocument articleBodyHtml = new HtmlDocument();
-            articleBodyHtml.LoadHtml(article.Summary.Text);
-            HtmlNodeCollection htmlBody = articleBodyHtml.DocumentNode.SelectNodes("//*[@class=\"mw-parser-output\"]/p");
-            htmlBody.RemoveAt(0); // Get rid of date code
-
-            articleBody.text = "";
-            foreach (HtmlNode paragraph in htmlBody)
-            {
-                articleBody.text += paragraph.InnerText;
-            }
-
-            break;
-        }
+        ExtractRSSToArticle(rssURL);
     }
 
     // Update is called once per frame
@@ -71,5 +56,49 @@ public class Article : MonoBehaviour
         xmlReader.Close();
 
         return rssFeed;
+    }
+
+    private void ExtractRSSToArticle(string rssURL)
+    {
+        SyndicationFeed rssFeed = DownloadRSSFeed(rssURL);
+
+        foreach (SyndicationItem article in rssFeed.Items)
+        {
+            articleHeadline.text = article.Title.Text;
+
+            string rawBody = GetRawArticleBody(article);
+
+            Regex removeNonLettersRegex = new Regex("[^a-zA-Z \\-]");
+            string parsedBody = removeNonLettersRegex.Replace(rawBody, "");
+            parsedBody = parsedBody.ToLower();
+            string[] words = parsedBody.Split(null);
+            Array.Sort(words);
+            
+            var result = words.GroupBy(word => word)
+                .OrderByDescending(wordGroup => wordGroup.Count())
+                .ThenBy(wordGroup => wordGroup.Key)
+                .SelectMany(wordGroup => wordGroup);
+
+            articleBody.text = string.Join(",", result);
+
+            break;
+        }
+    }
+
+    private string GetRawArticleBody(SyndicationItem article)
+    {
+        string articleText = "";
+
+        HtmlDocument articleBodyHtml = new HtmlDocument();
+        articleBodyHtml.LoadHtml(article.Summary.Text);
+        HtmlNodeCollection htmlBody = articleBodyHtml.DocumentNode.SelectNodes("//*[@class=\"mw-parser-output\"]/p");
+        htmlBody.RemoveAt(0); // Get rid of date code
+
+        foreach (HtmlNode paragraph in htmlBody)
+        {
+            articleText += paragraph.InnerText;
+        }
+
+        return articleText;
     }
 }
