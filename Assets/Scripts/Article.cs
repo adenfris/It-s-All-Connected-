@@ -125,8 +125,7 @@ public class Article : MonoBehaviour
     private static bool WordAllowed(String word, List<string> wordBlacklist)
     {
         bool notTooShort = word.Length >= Settings.Instance.shortestWordAllowed;
-
-        bool blacklisted = wordBlacklist.Contains<string>(word);
+        bool blacklisted = wordBlacklist.Any(blacklistWord => blacklistWord.Contains(word));
 
         return (notTooShort && !blacklisted);
     }

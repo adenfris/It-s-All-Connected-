@@ -18,7 +18,7 @@ public class Settings : Singleton<Settings>
         var blacklistFile = streamReader.ReadToEnd();
         streamReader.Close();
 
-        string[] words = blacklistFile.Split("\n"[0]);
+        string[] words = blacklistFile.Split('\n');
         return words.Cast<string>().ToList();
     }
 }
