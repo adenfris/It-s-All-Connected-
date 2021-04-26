@@ -896,7 +896,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!114 &8584729787833782583
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1519,6 +1519,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 8584729787833782578}
     m_Modifications:
+    - target: {fileID: 121965748044890021, guid: 304eec0cdfafe2d4aa3c2d9bfbd7f184, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 781753209336290135, guid: 304eec0cdfafe2d4aa3c2d9bfbd7f184, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 802712242186155203, guid: 304eec0cdfafe2d4aa3c2d9bfbd7f184, type: 3}
       propertyPath: m_SortingOrder
       value: 5
@@ -1526,6 +1534,18 @@ PrefabInstance:
     - target: {fileID: 2609441422397373428, guid: 304eec0cdfafe2d4aa3c2d9bfbd7f184, type: 3}
       propertyPath: m_Name
       value: Connection
+      objectReference: {fileID: 0}
+    - target: {fileID: 3014176899618210218, guid: 304eec0cdfafe2d4aa3c2d9bfbd7f184, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352255292955364951, guid: 304eec0cdfafe2d4aa3c2d9bfbd7f184, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6883476164098729250, guid: 304eec0cdfafe2d4aa3c2d9bfbd7f184, type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8196421932087542645, guid: 304eec0cdfafe2d4aa3c2d9bfbd7f184, type: 3}
       propertyPath: m_RootOrder
@@ -1569,6 +1589,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8196421932087542645, guid: 304eec0cdfafe2d4aa3c2d9bfbd7f184, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8398061806619071281, guid: 304eec0cdfafe2d4aa3c2d9bfbd7f184, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

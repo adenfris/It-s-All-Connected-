@@ -18,6 +18,8 @@ public class Connection : MonoBehaviour
     public int actualScore;
 
     [SerializeField]
+    private AudioManager audioManager;
+    [SerializeField]
     private TMP_InputField wordInput;
     [SerializeField]
     private TMP_Text wordTextDisp;
@@ -53,6 +55,13 @@ public class Connection : MonoBehaviour
 
         wordInput.enabled = true;
         wordInput.onEndEdit.AddListener(delegate{LockInput(wordInput);});
+
+        if (audioManager == null)
+        {
+            audioManager = FindObjectOfType<AudioManager>();
+        }
+
+        audioManager.PlayConnectionEffect();
     }
 
     private void VerifyInspectorSettings()
@@ -120,6 +129,13 @@ public class Connection : MonoBehaviour
         }
 
         userInterface.AddToScore(actualScore, possibleScore);
+
+        if (audioManager == null)
+        {
+            audioManager = FindObjectOfType<AudioManager>();
+        }
+
+        audioManager.PlayConnectionEffect();
     }
 }
 
