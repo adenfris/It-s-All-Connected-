@@ -11,15 +11,13 @@ public class Settings : Singleton<Settings>
     public float zoomSpeed = 500.0f;
     public int shortestWordAllowed = 4;
 
-    private static string wordBlacklistFilename = "Word Blacklist.txt";
+    private static string wordBlacklistFilename = "Word Blacklist";
 
     public static List<string> GetWordBlacklist()
     {
-        var streamReader = new StreamReader(Application.dataPath + "/" + wordBlacklistFilename);
-        var blacklistFile = streamReader.ReadToEnd();
-        streamReader.Close();
+        TextAsset blacklistFile = Resources.Load<TextAsset>(wordBlacklistFilename);
 
-        string[] words = blacklistFile.Split('\n');
+        string[] words = blacklistFile.text.Split('\n');
         return words.Cast<string>().ToList();
     }
 }
