@@ -48,7 +48,7 @@ public class ArticlesManager : MonoBehaviour
         newConnectionObject.transform.SetParent(this.transform);
 
         Connection newConnection = newConnectionObject.GetComponent<Connection>();
-        newConnection.SetConnection(articleOne, articleTwo);
+        newConnection.SetConnection(articleOne, articleTwo, userInterface);
 
         ConnectionCompare connectionCompare = new ConnectionCompare();
 

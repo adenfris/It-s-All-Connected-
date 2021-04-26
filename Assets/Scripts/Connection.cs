@@ -1,6 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
+using UnityEngine.UI;
+
+using TMPro;
 
 [RequireComponent(typeof(LineRenderer))]
 public class Connection : MonoBehaviour
@@ -14,9 +18,16 @@ public class Connection : MonoBehaviour
     public int actualScore;
 
     [SerializeField]
+    private TMP_InputField wordInput;
+    [SerializeField]
+    private TMP_Text wordTextDisp;
+
+    [SerializeField]
     private float stringZLayer = 5;
 
     private LineRenderer lineRenderer;
+
+    private UserInterface userInterface;
 
     private void Start() {
         lineRenderer = this.GetComponent<LineRenderer>();
@@ -26,8 +37,10 @@ public class Connection : MonoBehaviour
         UpdateLineRenderer();
     }
 
-    public void SetConnection(Article articleOne, Article articleTwo)
+    public void SetConnection(Article articleOne, Article articleTwo, UserInterface userInterface)
     {
+        this.userInterface = userInterface;
+
         if (lineRenderer == null)
         {
             lineRenderer = this.GetComponent<LineRenderer>();
@@ -38,8 +51,29 @@ public class Connection : MonoBehaviour
         this.articleOne = articleOne;
         this.articleTwo = articleTwo;
 
-        CalculateScore();
+        wordInput.enabled = true;
+        wordInput.onEndEdit.AddListener(delegate{LockInput(wordInput);});
     }
+
+    private void VerifyInspectorSettings()
+    {
+        if (wordTextDisp == null)
+        {
+            Debug.LogError("Word Text UI not assigned in connection inspector!");
+        }
+        if (wordInput == null)
+        {
+            Debug.LogError("Word Input UI not assigned in connection inspector!");
+        }
+    }
+    void LockInput(TMP_InputField input)
+	{
+        wordTextDisp.enabled = true;
+        connectionWord = wordInput.text;
+        wordTextDisp.text = connectionWord;
+		wordInput.gameObject.SetActive(false);
+        CalculateScore();
+	}
 
     private void UpdateLineRenderer()
     {
@@ -56,6 +90,10 @@ public class Connection : MonoBehaviour
 
         lineRenderer.SetPosition(0, posOne);
         lineRenderer.SetPosition(1, posTwo);
+
+        Vector3 centerOfLine = (posOne + posTwo) / 2;
+        wordInput.transform.position = centerOfLine;
+        wordTextDisp.transform.position = centerOfLine;
     }
 
     private void CalculateScore()
@@ -80,6 +118,8 @@ public class Connection : MonoBehaviour
                 possibleScore = Mathf.Max(possibleScore, thisWordScore);
             }
         }
+
+        userInterface.AddToScore(actualScore, possibleScore);
     }
 }
 

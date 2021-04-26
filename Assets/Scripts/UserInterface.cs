@@ -45,7 +45,11 @@ public class UserInterface : MonoBehaviour
         totalScoreEarned += scoreAdded;
         totalScorePossible += scorePossible;
 
-        float scorePercent = totalScoreEarned / totalScorePossible;
+        float scorePercent = 0;
+        if (totalScorePossible != 0)
+        {
+            scorePercent = totalScoreEarned / totalScorePossible;
+        }
 
         string newScoreText = string.Format("Score: {0} ({1}%)\n({2} Possible)", totalScoreEarned, scorePercent, totalScorePossible);
 
