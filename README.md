@@ -1,4 +1,4 @@
-A game of tenuous connections.
+A game of tenuous connections. Made for Ludum Dare 48.
 
 Find connections between real-world news articles (courtesy of WikiNews), by finding words that occur between them. You are scored by the minimum count of the two articles - so if one article has 9349 of a word and the other has 3, your score will be three. Only type single lowercase words, or you won’t get credit.
 
